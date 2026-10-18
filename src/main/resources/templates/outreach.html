@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="color-scheme" content="light dark">
     <meta name="theme-color" content="#f3f6fc">
+    <meta name="robots" content="noindex, nofollow">
 
     <title>Recruiter Outreach | Faisal Ali</title>
 
@@ -53,7 +54,7 @@
             --ok-bg: #ecfdf5;
             --warn: #b45309;
             --warn-bg: #fffbeb;
-            --err: #dc2626;
+            --err: #b91c1c;
             --err-bg: #fef2f2;
 
             --shadow: 0 1px 2px rgba(11, 31, 68, 0.05), 0 22px 44px -26px rgba(11, 31, 68, 0.24);
@@ -100,6 +101,7 @@
 
         html {
             -webkit-text-size-adjust: 100%;
+            scroll-padding-top: env(safe-area-inset-top, 0px);
         }
 
         body {
@@ -115,14 +117,59 @@
             -webkit-font-smoothing: antialiased;
         }
 
+        body:has(dialog[open]) {
+            overflow: hidden;
+        }
+
         body,
         .compose,
         .letter,
         .letter-meta,
         .detail,
+        .history,
+        .history-detail,
         dialog,
         .theme-toggle {
             transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+        }
+
+        :where(a, button, input):focus-visible {
+            outline: 2px solid transparent;
+            outline-offset: 2px;
+        }
+
+        [tabindex="-1"]:focus {
+            outline: none;
+        }
+
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        .skip-link {
+            position: absolute;
+            left: 16px;
+            top: -64px;
+            z-index: 10;
+            padding: 10px 16px;
+            border-radius: 10px;
+            background: var(--accent);
+            color: var(--accent-ink);
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .skip-link:focus-visible {
+            top: calc(12px + env(safe-area-inset-top, 0px));
+            box-shadow: 0 0 0 3px var(--ring);
         }
 
         .shell {
@@ -130,7 +177,7 @@
             width: 100%;
             max-width: 1040px;
             margin: 0 auto;
-            padding: 48px max(24px, env(safe-area-inset-right, 0px)) 24px max(24px, env(safe-area-inset-left, 0px));
+            padding: calc(48px + env(safe-area-inset-top, 0px)) max(24px, env(safe-area-inset-right, 0px)) 24px max(24px, env(safe-area-inset-left, 0px));
         }
 
         .masthead {
@@ -212,8 +259,8 @@
             justify-content: center;
             gap: 8px;
             flex: none;
-            height: 40px;
-            min-width: 40px;
+            height: 44px;
+            min-width: 44px;
             padding: 0 14px;
             border: 1px solid var(--line-strong);
             border-radius: 999px;
@@ -225,13 +272,7 @@
             cursor: pointer;
         }
 
-        .theme-toggle:hover {
-            background: var(--paper-2);
-            border-color: var(--faint);
-        }
-
         .theme-toggle:focus-visible {
-            outline: none;
             border-color: var(--focus);
             box-shadow: 0 0 0 3px var(--ring);
         }
@@ -254,12 +295,28 @@
             display: none;
         }
 
-        .compose {
-            padding: 24px 26px 20px;
+        .compose,
+        .letter,
+        .history {
             background: var(--paper);
             border: 1px solid var(--line);
             border-radius: 16px;
             box-shadow: var(--shadow);
+        }
+
+        .letter,
+        .history {
+            margin-top: 22px;
+            overflow: hidden;
+        }
+
+        [data-result],
+        .history-detail {
+            scroll-margin-top: calc(12px + env(safe-area-inset-top, 0px));
+        }
+
+        .compose {
+            padding: 24px 26px 20px;
         }
 
         .compose-grid {
@@ -289,15 +346,16 @@
             background: var(--paper-2);
             color: var(--ink);
             font: inherit;
+            font-size: 16px;
             transition: border-color 0.15s, box-shadow 0.15s, background 0.15s, color 0.2s;
         }
 
         input::placeholder {
-            color: var(--faint);
+            color: var(--muted);
+            opacity: 1;
         }
 
         input:focus-visible {
-            outline: none;
             border-color: var(--focus);
             background: var(--paper);
             box-shadow: 0 0 0 3px var(--ring);
@@ -316,16 +374,11 @@
             color: var(--accent-ink);
             font: inherit;
             font-weight: 650;
+            text-decoration: none;
             white-space: nowrap;
             cursor: pointer;
             box-shadow: 0 10px 22px -12px var(--accent-glow);
             transition: background 0.15s, box-shadow 0.15s, transform 0.15s;
-        }
-
-        .btn:hover {
-            background: var(--accent-hover);
-            transform: translateY(-1px);
-            box-shadow: 0 14px 26px -12px var(--accent-glow);
         }
 
         .btn:active {
@@ -333,7 +386,6 @@
         }
 
         .btn:focus-visible {
-            outline: none;
             box-shadow: 0 0 0 3px var(--ring);
         }
 
@@ -356,10 +408,35 @@
             box-shadow: none;
         }
 
-        .btn-secondary:hover {
-            background: var(--paper-2);
-            box-shadow: none;
-            transform: none;
+        .btn-danger {
+            color: var(--err);
+            border-color: color-mix(in srgb, var(--err) 45%, var(--line-strong));
+        }
+
+        @media (hover: hover) {
+            .btn:hover:not(:disabled) {
+                background: var(--accent-hover);
+                transform: translateY(-1px);
+                box-shadow: 0 14px 26px -12px var(--accent-glow);
+            }
+
+            .btn-secondary:hover:not(:disabled) {
+                background: var(--paper-2);
+                box-shadow: none;
+                transform: none;
+            }
+
+            .btn-danger:hover:not(:disabled) {
+                color: var(--err);
+                background: var(--err-bg);
+                box-shadow: none;
+                transform: none;
+            }
+
+            .theme-toggle:hover {
+                background: var(--paper-2);
+                border-color: var(--faint);
+            }
         }
 
         .spinner {
@@ -401,13 +478,15 @@
             flex: none;
         }
 
-        .letter {
-            margin-top: 22px;
-            background: var(--paper);
-            border: 1px solid var(--line);
-            border-radius: 16px;
-            box-shadow: var(--shadow);
-            overflow: hidden;
+        .alert {
+            margin: 0 0 22px;
+            padding: 14px 16px;
+            border: 1px solid color-mix(in srgb, var(--err) 35%, transparent);
+            border-radius: 10px;
+            background: var(--err-bg);
+            color: var(--err);
+            font-weight: 600;
+            overflow-wrap: anywhere;
         }
 
         .letter[data-result] {
@@ -549,6 +628,131 @@
             font-size: 14.5px;
         }
 
+        .history-list {
+            display: grid;
+        }
+
+        .history-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.3fr) minmax(110px, 0.7fr) auto;
+            gap: 18px;
+            align-items: center;
+            padding: 16px 26px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .history-row:last-child {
+            border-bottom: 0;
+        }
+
+        .history-main {
+            min-width: 0;
+        }
+
+        .history-company {
+            font-weight: 650;
+            overflow-wrap: anywhere;
+        }
+
+        .history-recruiter,
+        .history-email,
+        .history-date {
+            margin-top: 2px;
+            color: var(--muted);
+            font-size: 13px;
+            overflow-wrap: anywhere;
+        }
+
+        .history-actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .history-actions form {
+            margin: 0;
+        }
+
+        .history-actions .btn {
+            height: 38px;
+            padding: 0 14px;
+            font-size: 13px;
+        }
+
+        .history-detail {
+            margin: 22px 26px 26px;
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            overflow: hidden;
+            background: var(--paper-2);
+        }
+
+        .history-detail-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .history-detail-head h3 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 650;
+        }
+
+        .history-detail-body {
+            padding: 18px 16px;
+        }
+
+        .history-detail-body dl {
+            display: grid;
+            grid-template-columns: 100px minmax(0, 1fr);
+            gap: 8px 14px;
+            margin: 0;
+        }
+
+        .history-detail-body dt {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .history-detail-body dd {
+            margin: 0;
+            font-weight: 600;
+            overflow-wrap: anywhere;
+        }
+
+        .history-detail-subject {
+            margin: 20px 0 0;
+            padding-top: 18px;
+            border-top: 1px solid var(--line);
+            font: 600 19px/1.35 var(--serif);
+            overflow-wrap: anywhere;
+        }
+
+        .history-detail-message {
+            margin-top: 14px;
+            white-space: pre-wrap;
+            font: 15px/1.7 var(--serif);
+            overflow-wrap: anywhere;
+        }
+
+        .history-detail-actions {
+            margin-top: 18px;
+            justify-content: flex-start;
+        }
+
+        .history-empty {
+            margin: 0;
+            padding: 22px 26px 24px;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
         dialog {
             width: min(440px, calc(100% - 32px));
             max-height: calc(100vh - 32px);
@@ -556,6 +760,7 @@
             margin: auto;
             padding: 0;
             overflow: auto;
+            overscroll-behavior: contain;
             border: 1px solid var(--line);
             border-radius: 16px;
             background: var(--paper);
@@ -627,9 +832,15 @@
             overflow-wrap: anywhere;
         }
 
+        @media (pointer: coarse) {
+            .history-actions .btn {
+                height: 44px;
+            }
+        }
+
         @media (max-width: 900px) {
             .shell {
-                padding-top: 36px;
+                padding-top: calc(36px + env(safe-area-inset-top, 0px));
             }
 
             .compose-grid {
@@ -640,8 +851,18 @@
                 width: 100%;
             }
 
-            input {
-                font-size: 16px;
+            .history-row {
+                grid-template-columns: minmax(0, 1fr) auto;
+            }
+
+            .history-status {
+                grid-column: 1;
+                grid-row: 2;
+            }
+
+            .history-actions {
+                grid-column: 2;
+                grid-row: 1 / span 2;
             }
         }
 
@@ -657,6 +878,35 @@
             .letter-meta > div + div {
                 border-left: 0;
                 border-top: 1px solid var(--line);
+            }
+
+            .history-row {
+                grid-template-columns: minmax(0, 1fr);
+                gap: 10px;
+                padding: 16px 18px;
+            }
+
+            .history-status,
+            .history-actions {
+                grid-column: auto;
+                grid-row: auto;
+            }
+
+            .history-actions {
+                justify-content: flex-start;
+            }
+
+            .history-detail {
+                margin: 18px;
+            }
+
+            .history-detail-body dl {
+                grid-template-columns: minmax(0, 1fr);
+                gap: 2px;
+            }
+
+            .history-detail-body dd {
+                margin-bottom: 8px;
             }
         }
 
@@ -686,8 +936,7 @@
             }
 
             .theme-toggle {
-                width: 42px;
-                height: 42px;
+                width: 44px;
                 padding: 0;
             }
 
@@ -734,6 +983,16 @@
                 padding: 0 18px 24px;
             }
 
+            .history-detail-head {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .history-empty {
+                padding-left: 18px;
+                padding-right: 18px;
+            }
+
             .dialog-body {
                 padding: 22px 18px 18px;
             }
@@ -762,11 +1021,7 @@
             }
 
             .letter-head,
-            .letter-meta > div {
-                padding-left: 14px;
-                padding-right: 14px;
-            }
-
+            .letter-meta > div,
             .letter-body,
             .ghost {
                 padding-left: 14px;
@@ -795,6 +1050,8 @@
 </head>
 
 <body>
+
+<a class="skip-link" href="#main">Skip to content</a>
 
 <div class="shell">
 
@@ -830,7 +1087,15 @@
 
     </header>
 
-    <main>
+    <main id="main" tabindex="-1">
+
+        <div class="alert"
+             th:if="${actionError != null}"
+             th:text="${actionError}"
+             role="alert"
+             tabindex="-1">
+            Something went wrong. Please try again.
+        </div>
 
         <section class="compose" aria-label="New outreach">
 
@@ -844,15 +1109,18 @@
                                 id="recruiterName"
                                 name="recruiterName"
                                 type="text"
-                                placeholder="Priya Sharma"
+                                th:value="${form != null ? form.recruiterName : ''}"
+                                placeholder="Faisal Ali"
+                                minlength="2"
                                 maxlength="100"
+                                pattern=".*\S.*"
+                                title="Enter the recruiter's name"
                                 autocomplete="off"
                                 autocapitalize="words"
                                 spellcheck="false"
                                 data-1p-ignore
                                 data-lpignore="true"
-                                required
-                                autofocus>
+                                required>
                     </div>
 
                     <div>
@@ -861,8 +1129,11 @@
                                 id="recruiterEmail"
                                 name="recruiterEmail"
                                 type="email"
-                                placeholder="priya@company.com"
+                                th:value="${form != null ? form.recruiterEmail : ''}"
+                                placeholder="faisal@company.com"
                                 maxlength="254"
+                                pattern="[^\s@]+@[^\s@]+\.[^\s@]{2,}"
+                                title="Enter a valid email address, for example faisal@company.com"
                                 inputmode="email"
                                 autocomplete="off"
                                 autocapitalize="none"
@@ -878,8 +1149,11 @@
                                 id="companyName"
                                 name="companyName"
                                 type="text"
+                                th:value="${form != null ? form.companyName : ''}"
                                 placeholder="Razorpay"
                                 maxlength="100"
+                                pattern=".*\S.*"
+                                title="Enter the company name"
                                 autocomplete="off"
                                 autocapitalize="words"
                                 spellcheck="false"
@@ -913,11 +1187,13 @@
 
                 </p>
 
+                <p id="form-status" class="sr-only" role="status" aria-live="polite"></p>
+
             </form>
 
         </section>
 
-        <section class="letter" aria-labelledby="result-title" data-result th:if="${result != null}">
+        <section class="letter" aria-labelledby="result-title" data-result tabindex="-1" th:if="${result != null}">
 
             <header class="letter-head">
 
@@ -925,8 +1201,8 @@
 
                 <span
                         class="pill"
-                        th:classappend="${result.status().name() == 'FAILED'} ? 'pill--err' : (${result.status().name() == 'DRY_RUN'} ? 'pill--info' : 'pill--ok')"
-                        th:text="${#strings.replace(result.status().name(), '_', ' ')}">SENT</span>
+                        th:classappend="${result.status() != null and result.status().name() == 'FAILED'} ? 'pill--err' : (${result.status() != null and result.status().name() == 'DRY_RUN'} ? 'pill--info' : 'pill--ok')"
+                        th:text="${result.status() != null ? #strings.replace(result.status().name(), '_', ' ') : 'UNKNOWN'}">SENT</span>
 
             </header>
 
@@ -934,12 +1210,12 @@
 
                 <div>
                     <dt>Recruiter</dt>
-                    <dd th:text="${result.recruiterName()}">Priya Sharma</dd>
+                    <dd th:text="${result.recruiterName()}">Faisal Ali</dd>
                 </div>
 
                 <div>
                     <dt>Email</dt>
-                    <dd th:text="${result.recruiterEmail()}">priya@company.com</dd>
+                    <dd th:text="${result.recruiterEmail()}">faisal@company.com</dd>
                 </div>
 
                 <div>
@@ -981,17 +1257,195 @@
 
         </section>
 
+        <section class="history" aria-labelledby="history-title">
+
+            <header class="letter-head">
+                <h2 id="history-title">Application history</h2>
+                <span class="pill pill--info"
+                      th:text="${applications != null ? applications.size() : 0} + ' application' + (${applications != null and applications.size() == 1 ? '' : 's'})">
+                    0 applications
+                </span>
+            </header>
+
+            <div class="history-list" th:if="${applications != null and !applications.isEmpty()}">
+
+                <article class="history-row" th:each="app : ${applications}">
+
+                    <div class="history-main">
+                        <div class="history-company" th:text="${app.companyName}">Razorpay</div>
+
+                        <div class="history-recruiter" th:text="${app.recruiterName}">Faisal Ali</div>
+
+                        <div class="history-email" th:text="${app.recruiterEmail}">faisal@company.com</div>
+
+                        <div class="history-date"
+                             th:if="${app.createdAt != null}"
+                             th:text="${#temporals.format(app.createdAt, 'dd MMM yyyy, hh:mm a')}">
+                            18 Oct 2026, 08:30 PM
+                        </div>
+                    </div>
+
+                    <div class="history-status">
+                        <span class="pill"
+                              th:classappend="${app.status != null and app.status.name() == 'FAILED'} ? 'pill--err' : (${app.status != null and app.status.name() == 'DRY_RUN'} ? 'pill--info' : 'pill--ok')"
+                              th:text="${app.status != null ? #strings.replace(app.status.name(), '_', ' ') : 'UNKNOWN'}">
+                            SENT
+                        </span>
+                    </div>
+
+                    <div class="history-actions">
+
+                        <a class="btn btn-secondary"
+                           th:href="@{'/ui/application/' + ${app.id}}"
+                           th:aria-label="'View application for ' + ${app.companyName}">
+                            View
+                        </a>
+
+                        <form th:if="${app.status != null and app.status.name() == 'FAILED'}"
+                              method="post"
+                              th:action="@{'/ui/application/' + ${app.id} + '/resend'}"
+                              data-action="resend"
+                              th:data-recruiter="${app.recruiterName}"
+                              th:data-email="${app.recruiterEmail}"
+                              th:data-company="${app.companyName}">
+
+                            <button class="btn btn-danger"
+                                    type="submit"
+                                    th:aria-label="'Resend application to ' + ${app.companyName}">
+                                Resend
+                            </button>
+                        </form>
+
+                        <form th:if="${app.status != null and app.status.name() == 'SENT'}"
+                              method="post"
+                              th:action="@{'/ui/application/' + ${app.id} + '/follow-up'}"
+                              data-action="follow-up"
+                              th:data-recruiter="${app.recruiterName}"
+                              th:data-email="${app.recruiterEmail}"
+                              th:data-company="${app.companyName}">
+
+                            <button class="btn"
+                                    type="submit"
+                                    th:aria-label="'Follow up with ' + ${app.companyName}">
+                                Follow Up
+                            </button>
+                        </form>
+
+                    </div>
+
+                </article>
+
+            </div>
+
+            <p class="history-empty"
+               th:if="${applications == null or applications.isEmpty()}">
+                No applications yet. Your submitted applications will appear here.
+            </p>
+
+            <div class="history-detail"
+                 tabindex="-1"
+                 th:if="${selectedApplication != null}">
+
+                <header class="history-detail-head">
+                    <h3>Application details</h3>
+
+                    <span class="pill"
+                          th:classappend="${selectedApplication.status != null and selectedApplication.status.name() == 'FAILED'} ? 'pill--err' : (${selectedApplication.status != null and selectedApplication.status.name() == 'DRY_RUN'} ? 'pill--info' : 'pill--ok')"
+                          th:text="${selectedApplication.status != null ? #strings.replace(selectedApplication.status.name(), '_', ' ') : 'UNKNOWN'}">
+                        SENT
+                    </span>
+                </header>
+
+                <div class="history-detail-body">
+
+                    <dl>
+                        <dt>Recruiter</dt>
+                        <dd th:text="${selectedApplication.recruiterName}">Faisal Ali</dd>
+
+                        <dt>Email</dt>
+                        <dd th:text="${selectedApplication.recruiterEmail}">faisal@company.com</dd>
+
+                        <dt>Company</dt>
+                        <dd th:text="${selectedApplication.companyName}">Razorpay</dd>
+
+                        <dt>Attempts</dt>
+                        <dd th:text="${selectedApplication.attempts}">1</dd>
+
+                        <th:block th:if="${selectedApplication.createdAt != null}">
+                            <dt>Created</dt>
+                            <dd th:text="${#temporals.format(selectedApplication.createdAt, 'dd MMM yyyy, hh:mm a')}">
+                                18 Oct 2026, 08:30 PM
+                            </dd>
+                        </th:block>
+
+                        <th:block th:if="${selectedApplication.updatedAt != null}">
+                            <dt>Updated</dt>
+                            <dd th:text="${#temporals.format(selectedApplication.updatedAt, 'dd MMM yyyy, hh:mm a')}">
+                                18 Oct 2026, 08:30 PM
+                            </dd>
+                        </th:block>
+                    </dl>
+
+                    <div th:if="${selectedApplication.subject != null}">
+                        <h4 class="history-detail-subject"
+                            th:text="${selectedApplication.subject}">
+                            Java Backend Engineer | 3+ Years | Application
+                        </h4>
+
+                        <div class="history-detail-message"
+                             th:text="${selectedApplication.body}">
+                            Email body
+                        </div>
+                    </div>
+
+                    <div class="detail"
+                         th:if="${selectedApplication.subject == null}"
+                         th:text="${selectedApplication.details}">
+                        Details
+                    </div>
+
+                    <div class="history-actions history-detail-actions"
+                         th:if="${selectedApplication.status != null}">
+
+                        <form th:if="${selectedApplication.status.name() == 'FAILED'}"
+                              method="post"
+                              th:action="@{'/ui/application/' + ${selectedApplication.id} + '/resend'}"
+                              data-action="resend"
+                              th:data-recruiter="${selectedApplication.recruiterName}"
+                              th:data-email="${selectedApplication.recruiterEmail}"
+                              th:data-company="${selectedApplication.companyName}">
+
+                            <button class="btn btn-danger" type="submit">Resend application</button>
+                        </form>
+
+                        <form th:if="${selectedApplication.status.name() == 'SENT'}"
+                              method="post"
+                              th:action="@{'/ui/application/' + ${selectedApplication.id} + '/follow-up'}"
+                              data-action="follow-up"
+                              th:data-recruiter="${selectedApplication.recruiterName}"
+                              th:data-email="${selectedApplication.recruiterEmail}"
+                              th:data-company="${selectedApplication.companyName}">
+
+                            <button class="btn" type="submit">Send follow-up</button>
+                        </form>
+
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
     </main>
 
 </div>
 
-<dialog id="confirm-dialog" aria-labelledby="confirm-title" th:unless="${dryRun}">
+<dialog id="confirm-dialog" aria-labelledby="confirm-title" aria-describedby="confirm-desc" th:unless="${dryRun}">
 
     <div class="dialog-body">
 
         <h2 id="confirm-title">Send this application?</h2>
 
-        <p>The email and your resume are sent immediately and cannot be recalled.</p>
+        <p id="confirm-desc">The email and your resume are sent immediately and cannot be recalled.</p>
 
         <dl class="confirm-meta">
 
@@ -1021,6 +1475,42 @@
 
 </dialog>
 
+<dialog id="action-dialog" aria-labelledby="action-title" aria-describedby="action-desc">
+
+    <div class="dialog-body">
+
+        <h2 id="action-title"></h2>
+
+        <p id="action-desc"></p>
+
+        <dl class="confirm-meta">
+
+            <div>
+                <dt>Recruiter</dt>
+                <dd id="action-name"></dd>
+            </div>
+
+            <div>
+                <dt>Email</dt>
+                <dd id="action-email"></dd>
+            </div>
+
+            <div>
+                <dt>Company</dt>
+                <dd id="action-company"></dd>
+            </div>
+
+        </dl>
+
+        <div class="dialog-actions">
+            <button type="button" id="action-cancel" class="btn btn-secondary">Cancel</button>
+            <button type="button" id="action-confirm" class="btn">Confirm</button>
+        </div>
+
+    </div>
+
+</dialog>
+
 <footer class="footer">Java Recruiter Outreach by Faisal Ali</footer>
 
 <script>
@@ -1028,7 +1518,9 @@
         const form = document.getElementById("outreach-form");
         const button = document.getElementById("submit-button");
         const label = document.getElementById("submit-label");
+        const status = document.getElementById("form-status");
         const dialog = document.getElementById("confirm-dialog");
+        const confirmForms = document.querySelectorAll("form[data-action]");
 
         const needsConfirm = Boolean(dialog) && form.dataset.dryRun !== "true";
         const idleLabel = label.textContent;
@@ -1043,6 +1535,7 @@
             button.setAttribute("aria-busy", "true");
             button.classList.add("is-sending");
             label.textContent = busyLabel;
+            status.textContent = busyLabel;
         };
 
         const unlock = () => {
@@ -1052,6 +1545,7 @@
             button.removeAttribute("aria-busy");
             button.classList.remove("is-sending");
             label.textContent = idleLabel;
+            status.textContent = "";
         };
 
         const fillConfirmation = () => {
@@ -1090,22 +1584,150 @@
             document.getElementById("confirm-send").addEventListener("click", () => {
                 confirmed = true;
                 dialog.close();
-                form.requestSubmit();
+
+                if (typeof form.requestSubmit === "function") {
+                    form.requestSubmit();
+                    return;
+                }
+
+                lock();
+                form.submit();
             });
         }
 
-        window.addEventListener("pageshow", (event) => {
-            if (event.persisted) {
-                unlock();
+        const actionDialog = document.getElementById("action-dialog");
+        const dryRun = form.dataset.dryRun === "true";
+
+        const actionCopy = {
+            "resend": {
+                title: "Resend this application?",
+                live: "The failed application and your resume are sent again immediately and cannot be recalled.",
+                preview: "A new preview is generated. Nothing is sent.",
+                label: "Resend now"
+            },
+            "follow-up": {
+                title: "Send this follow-up?",
+                live: "The follow-up email and your resume are sent immediately and cannot be recalled.",
+                preview: "A follow-up preview is generated. Nothing is sent.",
+                label: "Send follow-up"
             }
+        };
+
+        let pendingForm = null;
+
+        const lockAction = (actionForm) => {
+            const submit = actionForm.querySelector("button[type='submit']");
+
+            actionForm.dataset.locked = "true";
+
+            if (submit) {
+                submit.disabled = true;
+                submit.setAttribute("aria-busy", "true");
+            }
+        };
+
+        const openAction = (actionForm, copy) => {
+            pendingForm = actionForm;
+
+            document.getElementById("action-title").textContent = copy.title;
+            document.getElementById("action-desc").textContent = dryRun ? copy.preview : copy.live;
+            document.getElementById("action-confirm").textContent = dryRun ? "Generate preview" : copy.label;
+            document.getElementById("action-name").textContent = actionForm.dataset.recruiter || "";
+            document.getElementById("action-email").textContent = actionForm.dataset.email || "";
+            document.getElementById("action-company").textContent = actionForm.dataset.company || "";
+
+            actionDialog.showModal();
+        };
+
+        confirmForms.forEach((actionForm) => {
+            actionForm.addEventListener("submit", (event) => {
+                const copy = actionCopy[actionForm.dataset.action];
+
+                if (actionForm.dataset.locked === "true") {
+                    event.preventDefault();
+                    return;
+                }
+
+                if (copy && actionForm.dataset.confirmed !== "true") {
+                    event.preventDefault();
+                    openAction(actionForm, copy);
+                    return;
+                }
+
+                lockAction(actionForm);
+            });
         });
 
-        const result = document.querySelector("[data-result]");
+        document.getElementById("action-cancel").addEventListener("click", () => {
+            actionDialog.close();
+        });
 
-        if (result && window.matchMedia("(max-width: 900px)").matches) {
-            result.scrollIntoView({
-                block: "start"
+        document.getElementById("action-confirm").addEventListener("click", () => {
+            const actionForm = pendingForm;
+
+            pendingForm = null;
+            actionDialog.close();
+
+            if (!actionForm) {
+                return;
+            }
+
+            actionForm.dataset.confirmed = "true";
+
+            if (typeof actionForm.requestSubmit === "function") {
+                actionForm.requestSubmit();
+                return;
+            }
+
+            lockAction(actionForm);
+            actionForm.submit();
+        });
+
+        actionDialog.addEventListener("close", () => {
+            pendingForm = null;
+        });
+
+        document.querySelectorAll("dialog").forEach((item) => {
+            item.addEventListener("click", (event) => {
+                if (event.target === item) {
+                    item.close();
+                }
             });
+        });
+
+        window.addEventListener("pageshow", (event) => {
+            if (!event.persisted) {
+                return;
+            }
+
+            unlock();
+
+            confirmForms.forEach((actionForm) => {
+                const submit = actionForm.querySelector("button[type='submit']");
+
+                delete actionForm.dataset.locked;
+                delete actionForm.dataset.confirmed;
+
+                if (submit) {
+                    submit.disabled = false;
+                    submit.removeAttribute("aria-busy");
+                }
+            });
+        });
+
+        const alertBox = document.querySelector(".alert");
+        const result = document.querySelector("[data-result]");
+        const selectedApplication = document.querySelector(".history-detail");
+        const target = alertBox || result || selectedApplication;
+
+        if (target) {
+            target.focus({preventScroll: true});
+
+            if (target !== alertBox && window.matchMedia("(max-width: 900px)").matches) {
+                target.scrollIntoView({block: "start"});
+            }
+        } else if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+            form.elements.recruiterName.focus();
         }
     })();
 
