@@ -1,0 +1,7 @@
+target/
+.env
+*.log
+outreach-log.csv
+.idea/
+.vscode/
+.DS_Store
